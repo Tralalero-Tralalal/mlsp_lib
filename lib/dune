@@ -1,0 +1,5 @@
+(library
+ (public_name mlsp_lib)
+ (name mlsp_lib)
+ (modules initialize)
+ (libraries rpc_lib yojson))

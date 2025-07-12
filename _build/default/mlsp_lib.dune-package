@@ -1,0 +1,44 @@
+(lang dune 3.19)
+(name mlsp_lib)
+(sections (lib .) (libexec .))
+(files
+ (lib
+  (META
+   dune-package
+   initialize.ml
+   mlsp_lib.a
+   mlsp_lib.cma
+   mlsp_lib.cmi
+   mlsp_lib.cmt
+   mlsp_lib.cmx
+   mlsp_lib.cmxa
+   mlsp_lib.ml
+   mlsp_lib__Initialize.cmi
+   mlsp_lib__Initialize.cmt
+   mlsp_lib__Initialize.cmx
+   opam))
+ (libexec (mlsp_lib.cmxs)))
+(library
+ (name mlsp_lib)
+ (kind normal)
+ (archives (byte mlsp_lib.cma) (native mlsp_lib.cmxa))
+ (plugins (byte mlsp_lib.cma) (native mlsp_lib.cmxs))
+ (native_archives mlsp_lib.a)
+ (requires rpc_lib yojson)
+ (main_module_name Mlsp_lib)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name mlsp_lib)
+     (visibility public)
+     (kind alias)
+     (source (path Mlsp_lib) (impl (path mlsp_lib.ml-gen))))
+    (name Mlsp_lib)
+    (modules
+     (module
+      (obj_name mlsp_lib__Initialize)
+      (visibility public)
+      (source (path Initialize) (impl (path initialize.ml))))))
+   (wrapped true))))
