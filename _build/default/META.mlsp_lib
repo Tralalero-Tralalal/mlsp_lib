@@ -1,6 +1,0 @@
-description = ""
-requires = "rpc_lib yojson"
-archive(byte) = "mlsp_lib.cma"
-archive(native) = "mlsp_lib.cmxa"
-plugin(byte) = "mlsp_lib.cma"
-plugin(native) = "mlsp_lib.cmxs"
