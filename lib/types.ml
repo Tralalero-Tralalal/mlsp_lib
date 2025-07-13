@@ -1,3 +1,5 @@
+open Yojson.Basic.Util
+module Initialize = struct
 let initialized = ref false;;
 
   type client_info = {
@@ -5,10 +7,11 @@ let initialized = ref false;;
     version: string option 
   }
 
-  type params = {
+  type t = {
     process_id: int;
-    client_info: client_info option;
-    locale: string option;
-      rootpath: string option (*| null*)
   };;
 
+  let yojson_to_t json = 
+    let p_id = json |> member "process_id" |> to_int in 
+    {process_id = p_id}
+end
