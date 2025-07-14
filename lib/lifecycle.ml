@@ -1,9 +1,10 @@
 open Yojson.Basic.Util
+open Rpc_lib.Basic
 
 module Initialize = struct
 
  let initialized = ref false;;
-  module Request = struct
+
     type p_id = 
       | Null
       | Int of int;;
@@ -23,31 +24,52 @@ module Initialize = struct
       process_id: p_id;
     };;
  
-    let yojson_to_request json = 
+    let request_of_yojson json = 
       let p_id = json |> member "process_id" |> json_to_p_id in 
       {process_id = p_id};;
-  end
 
-  module Response = struct
-    open Request
-    
-    type t = {
+    type result = {
       capabilities: bool;
     };;
+
+
+    type error = {
+      retry: bool;
+    }
+
+    type response = (result, error) Result.t;;
     
-    let yojson_of_t t = 
-      `Assoc ["capabilities", `Bool t.capabilities];;
+    let yojson_of_result res : Yojson.Basic.t = 
+      `Assoc ["capabilities", `Bool res.capabilities];;
+    
+    let yojson_of_error err : Yojson.Basic.t  = 
+      `Assoc ["retry", `Bool err.retry];;
 
-    let initialize process_id : t =
-      if not !initialized then begin
-      initialized := true;
-      match process_id with
-      | Null -> {capabilities = false}
-      | Int _ -> {capabilities = true}
-      end
-      else
-        {capabilities = true}
+    let yojson_of_response (resp : response) =
+      match resp with
+      | Ok res -> yojson_of_result res
+      | Error err -> yojson_of_error err
 
-    let full_initialize = fun params -> let fields = Request.yojson_to_request params in initialize fields.process_id
-  end
+    let initialize process_id : response =
+      try
+        assert (!initialized = false);
+        initialized := true; 
+        match process_id with
+        | Null -> Ok {capabilities = true}
+        | Int _ -> Ok {capabilities = true}
+      with _ -> Error {retry = false}
+        ;;
+
+    let choose_between id resp = 
+      let open Response in
+      let open Error in
+      match resp with
+      | Ok res -> yojson_of_result res |> (fun res -> Ok res) |> construct_response id |> Response.yojson_of_t
+      | Error err -> yojson_of_error err |> (fun err -> Error (construct_error Code.ServerNotInitialized "Server was already initialized bozo" err))  |>
+          Response.construct_response id |> Response.yojson_of_t;;
+
+    let respond params : Yojson.Basic.t =
+        let id = Id.t_of_yojson (`Int 7) in
+        let fields = request_of_yojson params in 
+          initialize fields.process_id |> choose_between id 
 end
