@@ -1,32 +1,53 @@
-open Yojson.Basic
 open Yojson.Basic.Util
-open Rpc_lib.Basic
 
 module Initialize = struct
-let initialized = ref false;;
 
-  type client_info = {
-    name: string;
-    version: string option 
-  }
+ let initialized = ref false;;
+  module Request = struct
+    type p_id = 
+      | Null
+      | Int of int;;
 
-  type t = {
-    process_id: int;
-  };;
-
-  let yojson_to_t json = 
-    let p_id = json |> member "process_id" |> to_int in 
-    {process_id = p_id};;
-
-
-  let initialize process_id : Response.t =
-    if not !initialized then begin
-    initialized := true;
-    Response.construct_response (`Int 7) (Ok (from_string (Printf.sprintf"{\"process_id\": %d}" process_id)))
+    let json_to_p_id json : p_id =
+      match json with
+      | `Null -> Null
+      | `Int x -> Int x
+      | _ -> raise (Type_error ("process_id is of wrong type", json))
+   
+    type client_info = {
+      name: string;
+      version: string option 
+    };;
+   
+    type request = {
+      process_id: p_id;
+    };;
+ 
+    let yojson_to_request json = 
+      let p_id = json |> member "process_id" |> json_to_p_id in 
+      {process_id = p_id};;
   end
-  else
-    Response.construct_response (`Int 7) 
-    (Error (Response.Error.construct_error ServerAlreadyInitialized "Server was already initialized bozo!" (from_string "{}")))
 
-  let full_initialize = fun params -> let fields = yojson_to_t params in initialize fields.process_id
+  module Response = struct
+    open Request
+    
+    type t = {
+      capabilities: bool;
+    };;
+    
+    let yojson_of_t t = 
+      `Assoc ["capabilities", `Bool t.capabilities];;
+
+    let initialize process_id : t =
+      if not !initialized then begin
+      initialized := true;
+      match process_id with
+      | Null -> {capabilities = false}
+      | Int _ -> {capabilities = true}
+      end
+      else
+        {capabilities = true}
+
+    let full_initialize = fun params -> let fields = Request.yojson_to_request params in initialize fields.process_id
+  end
 end
