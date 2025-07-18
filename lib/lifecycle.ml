@@ -4,11 +4,15 @@ open Rpc_lib.Basic
 
 type uri = string;;
 
+let to_string_opt = function
+  | None -> None
+  | Some str -> Some (to_string str);;
+  
 module Initialize = struct
-
  let initialized = ref false;;
-    
-  (*Types*)
+   
+  module Req = struct
+    module Types = struct
     type p_id = 
       | Null
       | Int of int;;
@@ -64,15 +68,11 @@ module Initialize = struct
       trace: traceValue option;
       workspaceFolders:  workspaceFoldersType option;
     };; 
-  (*Types*)
-  (*Opt to not*)
 
-  let to_string_opt = function
-      | None -> None
-      | Some str -> Some (to_string str);;
-  
-  (*Json to Type*)
-  let json_to_p_id : t -> p_id = function
+    end
+    open Types
+    module Conversions = struct
+    let json_to_p_id : t -> p_id = function
     | `Null -> Null
     | `Int x -> Int x
     | json -> raise (Type_error ("process_id is of wrong type", json))
@@ -161,7 +161,13 @@ module Initialize = struct
     trace = json |> get_opt_mem  "trace" |> opt_to_trace;
     workspaceFolders = json |> get_opt_mem "workspaceFolders" |> opt_to_workspace_folders
     };;
+  end
+  end
 
+  open Req.Types
+  open Req.Conversions
+
+  (*Opt to not*)
     type result = {
       capabilities: bool;
     };;
