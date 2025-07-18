@@ -70,8 +70,9 @@ module Initialize = struct
     };; 
 
     end
-    open Types
     module Conversions = struct
+      open Types
+
     let json_to_p_id : t -> p_id = function
     | `Null -> Null
     | `Int x -> Int x
@@ -208,7 +209,17 @@ module Initialize = struct
           Response.construct_response id |> Response.yojson_of_t;;
 
     let respond params : Yojson.Basic.t =
+      let open Rpc_lib.Basic.Response.Error in
+    try
         let id = Id.t_of_yojson (`Int 7) in
         let fields = request_of_yojson params in 
           initialize fields.processId |> choose_between id 
+    with
+    | Missing_Member str -> yojson_of_error {retry = false} |> 
+      (fun err -> Error (construct_error Code.InvalidRequest str err))  |>
+          Response.construct_response (`Int 0) |> Response.yojson_of_t
+    | str ->  yojson_of_error {retry = false} |> 
+      (fun err -> Error (construct_error Code.InternalError (Printexc.to_string str) err))  |>
+          Response.construct_response (`Int 0) |> Response.yojson_of_t
+
 end
