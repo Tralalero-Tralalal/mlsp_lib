@@ -4,41 +4,29 @@ open Rpc_lib.Basic
 
 type uri = string;;
 
+(*type workspace = {
+		workspaceFolders: workspaceFoldersServerCapabilities option;
+		fileOperations: fileOperations option
+    }
+
+and fileOperations = {
+	didCreate: fileOperationRegistrationOptions option;
+
+	willCreate: fileOperationRegistrationOptions option;
+
+  didRename: fileOperationRegistrationOptions option;
+
+	willRename: fileOperationRegistrationOptions option;
+
+	didDelete: fileOperationRegistrationOptions option;
+
+	willDelete: fileOperationRegistrationOptions option;
+};;*)
+
 let to_string_opt = function
   | None -> None
   | Some str -> Some (to_string str);;
-  
-module Initialize = struct
- let initialized = ref false;;
-   
-  module Req = struct
-    module Types = struct
-    type p_id = 
-      | Null
-      | Int of int;;
 
-    type client_info = {
-      name: string;
-      version: string option 
-    };;
-    
-    type rootpath = 
-    | Null
-    | String of string;;
-    
-    type rooturi = 
-    | Null
-    | DocUri of string;;
-    
-    type workspaceFoldersType = 
-    | Null
-    | WorkspaceFolders of workspaceFolder list
-
-    and workspaceFolder = {
-    uri: uri;
-    name: string
-  };;
-    
     type lspAny = 
     | Null
     | String of string
@@ -53,30 +41,189 @@ module Initialize = struct
 
     and lspArray = lspAny list;;
       
-    type traceValue = 
-    | Off
-    | Messages
-    | Verbose;;
+type clientCapabilities = {
+  (*synchronization: textDocumentSyncClientCapabilities option;
 
+	completion: completionClientCapabilities option;
+
+	hover: hoverClientCapabilities option;
+
+	signatureHelp: signatureHelpClientCapabilities option;
+
+	declaration: declarationClientCapabilities option;
+
+	definition: definitionClientCapabilities option;
+
+	typeDefinition: typeDefinitionClientCapabilities option;
+
+	implementation: implementationClientCapabilities option;
+
+	references: referenceClientCapabilities option;
+
+	documentHighlight: documentHighlightClientCapabilities option;
+
+  documentSymbol: documentSymbolClientCapabilities option;
+
+	codeAction: codeActionClientCapabilities option;
+
+	codeLens: codeLensClientCapabilities option;
+
+	documentLink: documentLinkClientCapabilities option;
+
+	colorProvider: documentColorClientCapabilities option;
+
+	formatting: documentFormattingClientCapabilities option;
+
+	rangeFormatting: documentRangeFormattingClientCapabilities option;
+
+	onTypeFormatting: documentOnTypeFormattingClientCapabilities option;
+
+	rename: renameClientCapabilities option;
+
+	publishDiagnostics: publishDiagnosticsClientCapabilities option;
+
+	foldingRange: foldingRangeClientCapabilities option;
+
+  selectionRange: selectionRangeClientCapabilities option;
+
+	linkedEditingRange: linkedEditingRangeClientCapabilities option;
+
+	callHierarchy: callHierarchyClientCapabilities option;
+
+	semanticTokens: semanticTokensClientCapabilities option;
+
+	moniker: monikerClientCapabilities option;
+
+	typeHierarchy: typeHierarchyClientCapabilities option;
+
+	inlineValue: inlineValueClientCapabilities option;
+
+	inlayHint: inlayHintClientCapabilities option;
+
+	diagnostic: DiagnosticClientCapabilities option;*)
+  l: bool
+};;
+
+
+type serverCapabilities = {
+  (*positionEncoding: positionEncodingKind option;
+
+  textDocumentSync: [`TextDocumentSyncOptions | `TextDocumentSyncKind] option;
+
+	notebookDocumentSync: [`NotebookDocumentSyncOptions
+    | `NotebookDocumentSyncRegistrationOptions] option;
+
+  completionProvider: completionOptions option;
+
+  hoverProvider: [`Bool of bool | `HoverOptions] option;
+
+  signatureHelpProvider: [`SignatureHelpOptions];
+
+  declarationProvider: [`Bool of bool | `DeclarationOptions
+    | `DeclarationRegistrationOptions] option;
+
+  definitionProvider: [`Bool of bool | `DefinitionOptions] option;
+
+	typeDefinitionProvider: [`Bool of bool | `TypeDefinitionOptions
+    | `TypeDefinitionRegistrationOptions] option;
+
+	implementationProvider: [`Bool of bool | `ImplementationOptions
+    | `ImplementationRegistrationOptions] option;
+
+  referencesProvider: [`Bool of bool | `ReferenceOptions] option;
+
+  documentHighlightProvider: [`Bool of bool | `DocumentHighlightOptions] option;
+
+  documentSymbolProvider: [`Bool of bool | `DocumentSymbolOptions] option;
+
+  codeActionProvider: [`Bool of bool | `CodeActionOptions] option;
+
+  codeLensProvider: codeLensOptions option;
+
+	documentLinkProvider: documentLinkOptions option;
+
+	colorProvider: [`Bool of bool | `DocumentColorOptions
+    | `DocumentColorRegistrationOptions] option;
+
+  documentFormattingProvider: [`Bool of bool | `DocumentFormattingOptions] option;
+
+  documentRangeFormattingProvider: [`Bool of bool | `DocumentRangeFormattingOptions] option;
+
+	documentOnTypeFormattingProvider: documentOnTypeFormattingOptions option;
+
+  renameProvider: [`Bool of bool | `RenameOptions];
+
+	foldingRangeProvider: [`Bool of bool | `FoldingRangeOptions
+      | `FoldingRangeRegistrationOptions] option;
+
+	executeCommandProvider: executeCommandOptions option;
+
+	selectionRangeProvider: [`Bool of bool | `SelectionRangeOptions
+    | `SelectionRangeRegistrationOptions] option;
+
+	linkedEditingRangeProvider: [`Bool of bool | `LinkedEditingRangeOptions
+  | `LinkedEditingRangeRegistrationOptions] option;
+
+	callHierarchyProvider: [`Bool of bool | `CallHierarchyOptions
+  | `CallHierarchyRegistrationOptions] option;
+
+	semanticTokensProvider: [`SemanticTokensOptions
+    | `SemanticTokensRegistrationOptions] option;
+
+  monikerProvider: [`Bool of bool | `MonikerOptions | `MonikerRegistrationOptions] option;
+
+	typeHierarchyProvider: [`Bool of bool | `TypeHierarchyOptions
+  | `TypeHierarchyRegistrationOptions] option;
+
+	inlineValueProvider: [`Bool of bool | `InlineValueOptions
+      | `InlineValueRegistrationOptions] option;
+
+	inlayHintProvider: [`Bool of bool | `InlayHintOptions
+    | `InlayHintRegistrationOptions] option;
+
+    diagnosticProvider: [`DiagnosticOptions | `DiagnosticRegistrationOptions] option;
+
+  workspaceSymbolProvider: [`Bool of bool | `WorkspaceSymbolOptions];
+
+  workspace: workspace;*)
+	experimental: lspAny option;
+}
+
+module Initialize = struct
+ let initialized = ref false;;
+   
+  module Req = struct
+    module Types = struct
+
+    type client_info = {
+      name: string;
+      version: string option 
+    };;
+    
+    type workspaceFolder = {
+    uri: uri;
+    name: string
+  };;
+    
     type request = {
-      processId: p_id;
+      processId: [`Null | `Int of int];
       clientInfo: client_info option;
       locale: string option;
-      rootPath: rootpath option;
-      rootUri: rooturi;
-      initializationsOption: lspAny option;
-      trace: traceValue option;
-      workspaceFolders:  workspaceFoldersType option;
+      rootPath: [`Null | `String of string] option;
+      rootUri: [`Null | `DocUri of string] ;
+      initializationOptions: lspAny option;
+      clientCapabilities: clientCapabilities;
+      trace: [`Off | `Messages | `Verbose] option;
+      workspaceFolders:  [`Null | `WorkspaceFolders of workspaceFolder list] option;
     };; 
 
     end
     module Conversions = struct
       open Types
 
-    let json_to_p_id : t -> p_id = function
-    | `Null -> Null
-    | `Int x -> Int x
-    | json -> raise (Type_error ("process_id is of wrong type", json))
+let json_to_p_id : t -> [`Null | `Int of int] = function
+  | (`Null | `Int _) as i -> i
+  | json -> raise (Type_error ("process_id is of wrong type", json))
 
   let json_to_client_info = function
   | `Assoc _ as json -> {
@@ -89,19 +236,18 @@ module Initialize = struct
     | None -> None
     | Some cli_Info -> Some (json_to_client_info cli_Info);;
     
-  let json_to_root_path : t -> rootpath = function  
-    | `Null -> Null
-    | `String x -> String x
-    | json -> raise (Type_error ("rootpath is of wrong type", json))
+  let json_to_root_path : t -> [`Null | `String of string] = function  
+    | (`Null | `String _) as i -> i
+    | json -> raise (Type_error ("rootpath is of wrong type", json));;
 
   let opt_to_root_path = function
     | None -> None
     | Some cli_Info -> Some (json_to_root_path cli_Info);;
   
-  let json_to_root_uri :t -> rooturi = function 
-    | `Null -> Null
-    | `String x -> DocUri x
-    | json -> raise (Type_error ("rootpath is of wrong type", json));;
+let json_to_root_uri : t -> [`Null | `DocUri of string] = function
+  | `Null -> `Null        (* If input JSON is `Null`, return the `Null` polymorphic variant tag. *)
+  | `String s -> `DocUri s (* If input JSON is `String` carrying `s`, return the `DocUri` tag with `s`. *)
+  | json -> raise (Type_error ("rootUri is of wrong type", json));;
  
 
   let rec json_to_lsp_any = function
@@ -118,9 +264,9 @@ module Initialize = struct
     | Some lspAny -> Some (json_to_lsp_any lspAny);;
  
   let str_to_trace = function 
-    | "off" -> Off
-    | "messages" -> Messages
-    | "verbose" -> Verbose
+    | "off" -> `Off
+    | "messages" -> `Messages
+    | "verbose" -> `Verbose
     | x -> raise (Type_error ("trace value does not match any known string", `String x));;
 
   let json_to_trace = function 
@@ -138,12 +284,12 @@ module Initialize = struct
     }
   | json -> raise (Type_error ("workspaceFolder is of wrong type", json));;
 
-  let json_to_workspace_folders : t -> workspaceFoldersType = function
-  | `Null ->  Null
-  | `List ls -> WorkspaceFolders (List.map (fun wf -> json_workspace_folder wf) ls)
+  let json_to_workspace_folders : t -> [`Null | `WorkspaceFolders of workspaceFolder list] = function
+  | `Null ->  `Null
+  | `List ls ->  `WorkspaceFolders (List.map (fun wf -> json_workspace_folder wf) ls)
   | json -> raise (Type_error ("WorkspaceFolders is of wrong type", json))
   
-  let opt_to_workspace_folders : t option -> workspaceFoldersType option = function
+  let opt_to_workspace_folders : t option -> [`Null | `WorkspaceFolders of workspaceFolder list] option = function
   | None -> None
   | Some wf -> Some (json_to_workspace_folders wf);;
  (*Json to Type*)
@@ -158,7 +304,8 @@ module Initialize = struct
     locale = json |> get_opt_mem "locale" |> to_string_opt;
     rootPath = json |> get_opt_mem "rootPath" |> opt_to_root_path;
     rootUri = json |> get_req_mem "rootUri" |> json_to_root_uri;
-    initializationsOption = json |> get_opt_mem  "initializationsOption" |> opt_to_lsp_any;
+    initializationOptions = json |> get_opt_mem  "initializationOptions" |> opt_to_lsp_any;
+    clientCapabilities = {l = true};
     trace = json |> get_opt_mem  "trace" |> opt_to_trace;
     workspaceFolders = json |> get_opt_mem "workspaceFolders" |> opt_to_workspace_folders
     };;
@@ -168,21 +315,27 @@ module Initialize = struct
   open Req.Types
   open Req.Conversions
 
-  (*Opt to not*)
-    type result = {
-      capabilities: bool;
+    module Resp = struct 
+
+    type serverInfo = {
+      name: string;
+      version: string option
+    }
+      type result = {
+      capabilities: serverCapabilities;
+      serverInfo: serverInfo 
     };;
 
+    let yojson_of_result res : Yojson.Basic.t = 
+      `Assoc ["capabilities", `Bool (json_to_lsp_any res.capabilities.experimental)];;
+    
 
     type error = {
       retry: bool;
     }
 
     type response = (result, error) Result.t;;
-    
-    let yojson_of_result res : Yojson.Basic.t = 
-      `Assoc ["capabilities", `Bool res.capabilities];;
-    
+
     let yojson_of_error err : Yojson.Basic.t  = 
       `Assoc ["retry", `Bool err.retry];;
 
@@ -190,6 +343,10 @@ module Initialize = struct
       | Ok res -> yojson_of_result res
       | Error err -> yojson_of_error err
 
+    end
+
+    open Resp
+    
     let initialize (process_id : p_id) : response =
       try
         assert (!initialized = false);
@@ -201,11 +358,10 @@ module Initialize = struct
         ;;
 
     let choose_between id resp = 
-      let open Response in
-      let open Error in
+      let open Rpc_lib.Basic.Response in
       match resp with
       | Ok res -> yojson_of_result res |> (fun res -> Ok res) |> construct_response id |> Response.yojson_of_t
-      | Error err -> yojson_of_error err |> construct_error Code.ServerNotInitialized "Server was already initialized bozo" |>
+      | Error err -> yojson_of_error err |> Error.construct_error Error.Code.ServerNotInitialized "Server was already initialized bozo" |>
           Response.construct_response id |> Response.yojson_of_t;;
 
     let respond params : Yojson.Basic.t =
