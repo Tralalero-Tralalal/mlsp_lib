@@ -250,7 +250,7 @@ let json_to_root_uri : t -> [`Null | `DocUri of string] = function
   | json -> raise (Type_error ("rootUri is of wrong type", json));;
  
 
-  let rec json_to_lsp_any = function
+  let rec json_to_lsp_any : t -> lspAny = function
   | `Null -> Null
   | `String str -> String str
   | `Assoc ass -> LspObject (List.map (fun obj -> let (str, json) = obj in (str, json_to_lsp_any json)) ass);
@@ -262,6 +262,19 @@ let json_to_root_uri : t -> [`Null | `DocUri of string] = function
   let opt_to_lsp_any = function
     | None -> None
     | Some lspAny -> Some (json_to_lsp_any lspAny);;
+
+  let rec lspAny_to_json : lspAny -> t = function
+  | Null -> `Null
+  | String str -> `String str
+  | LspObject ass -> `Assoc (List.map (fun obj -> let (str, lsp) = obj in (str, lspAny_to_json lsp)) ass)
+  | LspArray ls -> `List (List.map (fun ele -> lspAny_to_json ele) ls)     
+  | (Int i | UInt i) -> `Int i  
+  | Decimal f -> `Float f 
+  | Bool b -> `Bool b;;  
+  
+  let optLspAny_to_json : lspAny option -> t = function
+  | None -> `Null
+  | Some ele -> lspAny_to_json ele;;
  
   let str_to_trace = function 
     | "off" -> `Off
@@ -323,11 +336,11 @@ let json_to_root_uri : t -> [`Null | `DocUri of string] = function
     }
       type result = {
       capabilities: serverCapabilities;
-      serverInfo: serverInfo 
+      serverInfo: serverInfo option;
     };;
 
     let yojson_of_result res : Yojson.Basic.t = 
-      `Assoc ["capabilities", `Bool (json_to_lsp_any res.capabilities.experimental)];;
+      `Assoc ["capabilities", (optLspAny_to_json res.capabilities.experimental)];;
     
 
     type error = {
@@ -347,13 +360,13 @@ let json_to_root_uri : t -> [`Null | `DocUri of string] = function
 
     open Resp
     
-    let initialize (process_id : p_id) : response =
+    let initialize process_id : response =
       try
         assert (!initialized = false);
         initialized := true; 
         match process_id with
-        | Null -> Ok {capabilities = true}
-        | Int _ -> Ok {capabilities = true}
+        | `Null -> Ok {capabilities = {experimental = Some Null}; serverInfo = None}
+        | `Int _ -> Ok {capabilities = {experimental = Some Null}; serverInfo = None}
       with _ -> Error {retry = false}
         ;;
 
